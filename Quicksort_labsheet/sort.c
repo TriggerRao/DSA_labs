@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 typedef struct person {
     int id;
@@ -69,10 +70,24 @@ int part(Person Ls[], int lo, int hi, int pInd) {
     return pivPos;
 }
 
+int lomuto_part(Person Ls[], int lo, int hi, int pInd) {
+    swap(Ls, pInd, hi);
+    Person pv = Ls[hi];
+    int i = lo - 1;
+    for (int j = lo; j < hi; j++) {
+        if (Ls[j].height < pv.height) {
+            i++;
+            swap(Ls, i, j);
+        }
+    }
+    swap(Ls, i + 1, hi);
+    return i + 1;
+}
+
 void quicksort(Person Ls[], int lo, int hi) {
     if (lo < hi) {
         int pInd = (lo + hi) / 2; // Choose a pivot index (can be optimized)
-        int pivPos = part(Ls, lo, hi, pInd); // Partition the array
+        int pivPos = lomuto_part(Ls, lo, hi, pInd); // Partition the array
         quicksort(Ls, lo, pivPos - 1); // Recursively sort the left subarray
         quicksort(Ls, pivPos + 1, hi); // Recursively sort the right subarray
     }
@@ -85,10 +100,17 @@ int main() {
         array[i].name = (char*)malloc(100*sizeof(char));
         fscanf(fptr, "%d, %[^,], %d, %d, %d", &array[i].id, array[i].name, &array[i].age, &array[i].height, &array[i].weight);
     } 
+    double time_taken;
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     quicksort(array, 0, 999);
+    gettimeofday(&end, NULL);
     for(int i = 0; i<1000; i++) {
         printf("%d ", array[i].height);
     }
+    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
+    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
+    printf("\nTime taken: %lf\n", time_taken);
     printf("\n");
     fclose(fptr);
     return 0;
